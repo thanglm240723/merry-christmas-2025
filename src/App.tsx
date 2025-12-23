@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import './App.css';
 import Snowfall from './components/Snallfall/Snowfall';
 import ChristmasModal from './components/ChristmasModal/ChristmasModal';
