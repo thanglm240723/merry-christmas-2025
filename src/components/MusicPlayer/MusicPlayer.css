@@ -8,7 +8,7 @@
   border-radius: 16px;
   box-shadow: 0 10px 40px rgba(0,0,0,0.5);
   color: #333; 
-  z-index: 90; /* ✅ Cao hơn tree nhưng thấp hơn nav */
+  z-index: 40; /* ✅ Thấp hơn modal (50) nhưng cao hơn tree (5) */
   overflow: hidden;
   font-family: 'Segoe UI', sans-serif;
   animation: slideUp 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28);
