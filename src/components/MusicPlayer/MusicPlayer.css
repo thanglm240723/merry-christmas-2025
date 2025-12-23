@@ -166,12 +166,25 @@
   border-left: 3px solid #e74c3c;
 }
 
-.playlist-cover {
+/* Container chứa ảnh */
+.playlist-cover-wrapper {
   width: 40px; 
   height: 40px; 
   border-radius: 6px; 
-  object-fit: cover; 
-  background: #ddd;
+  overflow: hidden; /* Đảm bảo ảnh không tràn ra ngoài bo góc */
+  background: #eee; /* Màu nền nhẹ khi đang load ảnh */
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Thẻ ảnh thực tế */
+.playlist-cover-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Giúp ảnh đầy khung mà không bị méo */
+  display: block;
 }
 
 .playlist-info { 

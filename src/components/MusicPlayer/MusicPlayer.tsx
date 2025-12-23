@@ -44,11 +44,9 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onClose }) => {
 
     const currentSong = playlist[playingIndex];
 
-
     useEffect(() => {
         const userAgent = navigator.userAgent.toLowerCase();
         setIsInAppBrowser(/zalo|fban|fbav|instagram/.test(userAgent));
-
 
         if (!window.YT) {
             const tag = document.createElement('script');
@@ -64,7 +62,6 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onClose }) => {
         return () => { isMountedRef.current = false; };
     }, []);
 
-    // 2. Hàm khởi tạo Player (Sẽ gọi khi User bấm Start)
     const initPlayer = () => {
         if (!window.YT || !window.YT.Player) return;
 
@@ -73,12 +70,12 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onClose }) => {
             width: '0',
             videoId: currentSong.youtubeId,
             playerVars: {
-                autoplay: 1,      // Ép chạy ngay
-                mute: 1,          // QUAN TRỌNG: Mute để qua mặt WebView
+                autoplay: 1,
+                mute: 1,
                 controls: 0,
                 disablekb: 1,
                 rel: 0,
-                playsinline: 1,   // QUAN TRỌNG: Chạy bên trong trình duyệt, không mở app YT
+                playsinline: 1,
                 enablejsapi: 1,
                 origin: window.location.origin,
             },
@@ -88,7 +85,6 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onClose }) => {
                     setDuration(event.target.getDuration());
                     setShowStartButton(false);
 
-                    // Sau khi đã "lách" được luật bằng mute, ta mở tiếng lại
                     event.target.unMute();
                     event.target.setVolume(100);
                     event.target.playVideo();
@@ -107,12 +103,10 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onClose }) => {
         if (window.YT && window.YT.Player) {
             initPlayer();
         } else {
-            // Trường hợp mạng chậm SDK chưa load xong
             alert("Đang tải dữ liệu, vui lòng thử lại sau giây lát!");
         }
     };
 
-    // 3. Update Progress
     useEffect(() => {
         if (isPlaying && isReady) {
             timerRef.current = setInterval(() => {
@@ -126,7 +120,6 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onClose }) => {
         return () => { if (timerRef.current) clearInterval(timerRef.current); };
     }, [isPlaying, isReady]);
 
-    // 4. Chuyển bài
     useEffect(() => {
         if (!isReady || !playerRef.current) return;
         playerRef.current.loadVideoById({
@@ -224,7 +217,18 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onClose }) => {
                                 className={`playlist-item ${playingIndex === i ? 'playing' : ''}`}
                                 onClick={() => setPlayingIndex(i)}
                             >
-                                <div className="playlist-cover" style={{ backgroundImage: `url(${song.cover})` }}></div>
+                                {/* ✅ PHẦN SỬA ĐỔI - Dùng <img> thay vì backgroundImage */}
+                                <div className="playlist-cover-wrapper">
+                                    <img
+                                        src={song.cover}
+                                        alt={song.title}
+                                        className="playlist-cover-img"
+                                        onError={(e) => {
+                                            // Nếu ảnh lỗi, hiển thị icon nhạc mặc định
+                                            e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect fill="%23e74c3c" width="100" height="100"/%3E%3Ctext x="50" y="55" text-anchor="middle" fill="white" font-size="40"%3E🎵%3C/text%3E%3C/svg%3E';
+                                        }}
+                                    />
+                                </div>
                                 <div className="playlist-info">
                                     <div className="song-title">{song.title}</div>
                                     <div className="song-artist">{song.artist}</div>
