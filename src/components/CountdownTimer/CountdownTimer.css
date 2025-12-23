@@ -1,0 +1,84 @@
+/* Container chính của bộ đếm */
+.countdown-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Đặt vị trí cố định ở góc trên trái, thay thế vị trí cũ */
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 40;
+  font-family: 'Segoe UI', sans-serif;
+  animation: slideDown 0.8s ease-out;
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Dòng chữ sự kiện (Vd: Sắp tới Giáng Sinh...) */
+.event-title {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  background: rgba(231, 76, 60, 0.8); /* Màu đỏ giáng sinh */
+  padding: 4px 12px;
+  border-radius: 20px;
+  backdrop-filter: blur(4px);
+}
+
+/* Hàng chứa các ô thời gian */
+.timer-container {
+  display: flex;
+  gap: 10px;
+}
+
+/* Từng ô thời gian (Ngày, Giờ, Phút...) */
+.time-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6); /* Nền đen mờ */
+  backdrop-filter: blur(10px); /* Hiệu ứng kính */
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 8px 10px;
+  min-width: 55px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+  transition: transform 0.3s;
+}
+
+.time-box:hover {
+  transform: translateY(-3px);
+  border-color: #e74c3c;
+}
+
+/* Số hiển thị */
+.time-value {
+  font-size: 20px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.2;
+}
+
+/* Chữ (Ngày, Giờ...) */
+.time-label {
+  font-size: 10px;
+  color: #ccc;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+/* Mobile Responsive: Thu nhỏ lại chút trên màn hình bé */
+@media (max-width: 600px) {
+  .countdown-wrapper { top: 10px; left: 10px; align-items: flex-start; }
+  .time-box { min-width: 45px; padding: 6px 8px; }
+  .time-value { font-size: 16px; }
+  .time-label { font-size: 8px; }
+}

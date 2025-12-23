@@ -1,0 +1,169 @@
+/* --- THIỆP GIÁNG SINH (CARD) --- */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex; justify-content: center; align-items: center;
+  z-index: 50; backdrop-filter: blur(5px);
+}
+
+.christmas-card {
+  position: relative;
+  background: #ffffff;
+  width: 520px; max-width: 90%;
+  border-radius: 24px;
+  padding: 40px 30px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  color: #333;
+  /* Thêm cái này để icon góc không bị che mất khi bay ra ngoài viền */
+  overflow: visible; 
+}
+
+@keyframes popIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Nút đóng Card */
+.close-card {
+  position: absolute; top: 15px; right: 20px;
+  background: none; border: none;
+  font-size: 28px; color: #aaa;
+  cursor: pointer; z-index: 20; /* Tăng z-index để chắc chắn bấm được */
+  transition: color 0.2s;
+}
+.close-card:hover { color: #e74c3c; }
+
+/* --- ICON TRANG TRÍ 4 GÓC & ANIMATION NHÚN --- */
+
+@keyframes suspendedBounce {
+    0%, 100% {
+        transform: translateY(0) scale(1.1, 0.9);
+        animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1); 
+    }
+    35% {
+
+        transform: translateY(-20px) scale(0.9, 1.1); 
+        animation-timing-function: cubic-bezier(0.7, 0, 1, 0.3); 
+    }
+    45% {
+        transform: translateY(-20px) scale(1, 1); 
+    }
+}
+
+
+.deco-icon {
+ position: absolute;
+ font-size: 40px;
+filter: drop-shadow(3px 10px 10px rgba(0,0,0,0.2)); 
+z-index: 10;
+pointer-events: none;
+ user-select: none;
+}
+
+
+.deco-icon span {
+ display: block;
+ animation: suspendedBounce 0.6s infinite; 
+}
+
+
+/* VỊ TRÍ MỚI: Sử dụng giá trị âm để đẩy icon ra khỏi viền thiệp */
+.top-left  { top: -20px; left: -20px;   transform: rotate(-20deg); }
+.top-right   { top: -20px; right: -20px;  transform: rotate(15deg); }
+.bottom-left { bottom: -20px; left: -20px;  transform: rotate(10deg); }
+.bottom-right{ bottom: -20px; right: -20px; transform: rotate(-15deg); }
+
+
+.top-left span  { animation-delay: 2s; }
+.top-right span  { animation-delay: 2s; }
+.bottom-left span  { animation-delay: 2s; }
+.bottom-right span { animation-delay: 2s; }
+
+/* -------------------------------------------------- */
+
+
+.card-content {
+  position: relative;
+  z-index: 2;
+}
+
+.santa-circle {
+  display: flex; justify-content: center;
+  margin-bottom: 20px;
+}
+
+.card-title {
+  color: #e74c3c; font-size: 26px;
+  font-weight: 800; margin-bottom: 8px;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.card-body {
+  color: #666; font-size: 16px; line-height: 1.6;
+  margin-bottom: 25px; min-height: 50px;
+  padding: 0 20px;
+}
+
+
+
+/* Container của toàn bộ cụm điều khiển */
+.slider-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px; /* Khoảng cách giữa các nút và chấm */
+  margin-top: 25px;
+}
+
+/* Nút bấm (Tròn đỏ, mũi tên trắng) */
+.nav-btn {
+  width: 45px;  /* Kích thước nút */
+  height: 45px;
+  border-radius: 50%;
+  border: none; /* Bỏ viền cũ */
+  background: #e74c3c; /* Màu nền ĐỎ */
+  color: white; /* Mũi tên TRẮNG */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3); /* Bóng đổ nhẹ màu đỏ */
+  transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+}
+
+/* Hiệu ứng khi di chuột vào */
+.nav-btn:hover {
+  transform: scale(1.1); /* Phóng to nhẹ */
+  background: #c0392b; /* Đỏ đậm hơn */
+  box-shadow: 0 6px 15px rgba(231, 76, 60, 0.5);
+}
+
+/* Kích thước icon SVG bên trong nút */
+.nav-btn svg {
+  width: 35px;
+  height: 35px;
+  stroke-width: 3px; /* Làm mũi tên dày hơn giống hình mẫu */
+}
+
+/* Phần Dots (Dấu chấm) */
+.dots {
+  display: flex;
+  gap: 8px;
+  padding: 0 10px; 
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  background: #ddd;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.dot.active {
+  background: #e74c3c;
+  width: 30px;
+  border-radius: 20px;
+}

@@ -1,0 +1,31 @@
+.container {
+  position: fixed;
+  inset: 0;
+  pointer-events: none; /* Quan trọng: Để bấm xuyên qua tuyết được */
+  z-index: 9999; /* <--- Tăng lên 9999 để tuyết rơi đè lên cả Modal */
+  overflow: hidden;
+}
+
+.snowflake {
+  position: absolute;
+  top: -50px;
+  color: #fff; /* <--- PHẢI CÓ: Màu trắng cho icon */
+  font-weight: bold;
+  user-select: none;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.8); /* Hiệu ứng phát sáng */
+  will-change: transform;
+  animation: fall linear infinite;
+}
+
+@keyframes fall {
+  0% {
+    opacity: 0;
+    transform: translateY(-10vh) translateX(0) rotate(0deg);
+  }
+  10% {
+    opacity: 1; /* Hiện ra nhanh hơn */
+  }
+  100% {
+    transform: translateY(110vh) translateX(var(--sway)) rotate(360deg);
+  }
+}
