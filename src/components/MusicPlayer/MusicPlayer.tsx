@@ -26,8 +26,8 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onClose }) => {
     const [currentTime, setCurrentTime] = useState<number>(0);
     const [duration, setDuration] = useState<number>(0);
     const [isReady, setIsReady] = useState<boolean>(false);
-    const [showStartButton, setShowStartButton] = useState<boolean>(true); // ✅ Hiển thị nút Start
-    const [isInAppBrowser, setIsInAppBrowser] = useState<boolean>(false); // ✅ Kiểm tra WebView
+    const [showStartButton, setShowStartButton] = useState<boolean>(true);
+    const [isInAppBrowser, setIsInAppBrowser] = useState<boolean>(false);
 
     const playerRef = useRef<any>(null);
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -44,26 +44,11 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onClose }) => {
 
     const currentSong = playlist[playingIndex];
 
-    // ✅ Kiểm tra xem có đang trong WebView (Zalo/FB) không
+
     useEffect(() => {
         const userAgent = navigator.userAgent.toLowerCase();
-        const isWebView =
-            userAgent.includes('zalo') ||
-            userAgent.includes('fban') ||
-            userAgent.includes('fbav') ||
-            userAgent.includes('instagram') ||
-            (userAgent.includes('mobile') && !userAgent.includes('safari'));
+        setIsInAppBrowser(/zalo|fban|fbav|instagram/.test(userAgent));
 
-        setIsInAppBrowser(isWebView);
-
-        if (isWebView) {
-            console.log('Đang chạy trong WebView (Zalo/Facebook)');
-        }
-    }, []);
-
-    // ✅ Load YouTube SDK - chỉ khi user click Start
-    const loadYouTubeAPI = () => {
-        isMountedRef.current = true;
 
         if (!window.YT) {
             const tag = document.createElement('script');
@@ -72,206 +57,111 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onClose }) => {
             firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
 
             window.onYouTubeIframeAPIReady = () => {
-                if (isMountedRef.current) {
-                    initPlayer();
-                }
+                if (isMountedRef.current) console.log("YouTube API Ready");
             };
-        } else {
-            setTimeout(() => {
-                if (isMountedRef.current) {
-                    initPlayer();
-                }
-            }, 100);
         }
-    };
 
-    // ✅ Cleanup khi component unmount
-    useEffect(() => {
-        return () => {
-            isMountedRef.current = false;
-            if (timerRef.current) {
-                clearInterval(timerRef.current);
-                timerRef.current = null;
-            }
-            if (playerRef.current && playerRef.current.destroy) {
-                playerRef.current.destroy();
-            }
-        };
+        return () => { isMountedRef.current = false; };
     }, []);
 
-    // ✅ Initialize Player
+    // 2. Hàm khởi tạo Player (Sẽ gọi khi User bấm Start)
     const initPlayer = () => {
-        const container = document.getElementById('youtube-player-container');
-        if (!container) {
-            console.error('Player container not found');
-            return;
-        }
+        if (!window.YT || !window.YT.Player) return;
 
-        try {
-            playerRef.current = new window.YT.Player('youtube-player-container', {
-                height: '0',
-                width: '0',
-                videoId: currentSong.youtubeId,
-                playerVars: {
-                    autoplay: 0, // ✅ Không autoplay
-                    controls: 0,
-                    disablekb: 1,
-                    rel: 0,
-                    enablejsapi: 1,
-                    origin: window.location.origin, // ✅ Cần thiết cho WebView
+        playerRef.current = new window.YT.Player('youtube-player-container', {
+            height: '0',
+            width: '0',
+            videoId: currentSong.youtubeId,
+            playerVars: {
+                autoplay: 1,      // Ép chạy ngay
+                mute: 1,          // QUAN TRỌNG: Mute để qua mặt WebView
+                controls: 0,
+                disablekb: 1,
+                rel: 0,
+                playsinline: 1,   // QUAN TRỌNG: Chạy bên trong trình duyệt, không mở app YT
+                enablejsapi: 1,
+                origin: window.location.origin,
+            },
+            events: {
+                onReady: (event: any) => {
+                    setIsReady(true);
+                    setDuration(event.target.getDuration());
+                    setShowStartButton(false);
+
+                    // Sau khi đã "lách" được luật bằng mute, ta mở tiếng lại
+                    event.target.unMute();
+                    event.target.setVolume(100);
+                    event.target.playVideo();
                 },
-                events: {
-                    onReady: (event: any) => {
-                        console.log('Player ready');
-                        setIsReady(true);
-                        setDuration(event.target.getDuration());
-                        setShowStartButton(false); // ✅ Ẩn nút Start
-                    },
-                    onStateChange: (event: any) => {
-                        if (event.data === window.YT.PlayerState.PLAYING) {
-                            setIsPlaying(true);
-                        } else if (event.data === window.YT.PlayerState.PAUSED) {
-                            setIsPlaying(false);
-                        } else if (event.data === window.YT.PlayerState.ENDED) {
-                            handleNext();
-                        }
-                    },
-                    onError: (event: any) => {
-                        console.error('YouTube Player Error:', event.data);
-                        handleNext();
-                    }
-                }
-            });
-        } catch (error) {
-            console.error('Error initializing player:', error);
+                onStateChange: (event: any) => {
+                    if (event.data === window.YT.PlayerState.PLAYING) setIsPlaying(true);
+                    else if (event.data === window.YT.PlayerState.PAUSED) setIsPlaying(false);
+                    else if (event.data === window.YT.PlayerState.ENDED) handleNext();
+                },
+                onError: () => handleNext()
+            }
+        });
+    };
+
+    const handleStartMusic = () => {
+        if (window.YT && window.YT.Player) {
+            initPlayer();
+        } else {
+            // Trường hợp mạng chậm SDK chưa load xong
+            alert("Đang tải dữ liệu, vui lòng thử lại sau giây lát!");
         }
     };
 
-    // ✅ Handle Start Button Click
-    const handleStartMusic = () => {
-        console.log('User clicked Start - Loading YouTube API...');
-        loadYouTubeAPI();
-    };
-
-    // ✅ Update progress timer
+    // 3. Update Progress
     useEffect(() => {
         if (isPlaying && isReady) {
             timerRef.current = setInterval(() => {
-                if (playerRef.current && playerRef.current.getCurrentTime) {
-                    try {
-                        const time = playerRef.current.getCurrentTime();
-                        setCurrentTime(time);
-                    } catch (error) {
-                        console.error('Error getting current time:', error);
-                    }
+                if (playerRef.current?.getCurrentTime) {
+                    setCurrentTime(playerRef.current.getCurrentTime());
                 }
             }, 500);
         } else {
-            if (timerRef.current) {
-                clearInterval(timerRef.current);
-                timerRef.current = null;
-            }
+            if (timerRef.current) clearInterval(timerRef.current);
         }
-
-        return () => {
-            if (timerRef.current) {
-                clearInterval(timerRef.current);
-                timerRef.current = null;
-            }
-        };
+        return () => { if (timerRef.current) clearInterval(timerRef.current); };
     }, [isPlaying, isReady]);
 
-    // ✅ Handle song change
+    // 4. Chuyển bài
     useEffect(() => {
         if (!isReady || !playerRef.current) return;
-
-        const changeSong = async () => {
-            try {
-                if (playerRef.current.getPlayerState() === window.YT.PlayerState.PLAYING) {
-                    playerRef.current.pauseVideo();
-                }
-
-                playerRef.current.loadVideoById({
-                    videoId: currentSong.youtubeId,
-                    startSeconds: 0
-                });
-
-                setTimeout(() => {
-                    if (playerRef.current && playerRef.current.getDuration) {
-                        const newDuration = playerRef.current.getDuration();
-                        setDuration(newDuration);
-                        setCurrentTime(0);
-                    }
-                }, 500);
-
-            } catch (error) {
-                console.error('Error changing song:', error);
-            }
-        };
-
-        changeSong();
+        playerRef.current.loadVideoById({
+            videoId: currentSong.youtubeId,
+            startSeconds: 0
+        });
+        playerRef.current.playVideo();
     }, [playingIndex, isReady]);
 
-    // ✅ Control functions
     const togglePlay = () => {
         if (!isReady || !playerRef.current) return;
-
-        try {
-            if (isPlaying) {
-                playerRef.current.pauseVideo();
-            } else {
-                playerRef.current.playVideo();
-            }
-        } catch (error) {
-            console.error('Error toggling play:', error);
-        }
+        isPlaying ? playerRef.current.pauseVideo() : playerRef.current.playVideo();
     };
 
-    const handleNext = () => {
-        setPlayingIndex((prev) => (prev === playlist.length - 1 ? 0 : prev + 1));
-    };
-
-    const handlePrev = () => {
-        setPlayingIndex((prev) => (prev === 0 ? playlist.length - 1 : prev - 1));
-    };
+    const handleNext = () => setPlayingIndex((prev) => (prev === playlist.length - 1 ? 0 : prev + 1));
+    const handlePrev = () => setPlayingIndex((prev) => (prev === 0 ? playlist.length - 1 : prev - 1));
 
     const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (!isReady || !playerRef.current) return;
-
-        try {
-            const time = parseFloat(e.target.value);
-            setCurrentTime(time);
-            playerRef.current.seekTo(time, true);
-        } catch (error) {
-            console.error('Error seeking:', error);
-        }
+        const time = parseFloat(e.target.value);
+        setCurrentTime(time);
+        playerRef.current?.seekTo(time, true);
     };
 
     const formatTime = (seconds: number) => {
-        if (!seconds || isNaN(seconds)) return '0:00';
-        const mins = Math.floor(seconds / 60);
-        const secs = Math.floor(seconds % 60);
+        const mins = Math.floor(seconds / 60) || 0;
+        const secs = Math.floor(seconds % 60) || 0;
         return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
     };
 
-    const handleSongClick = (index: number) => {
-        setPlayingIndex(index);
-        setTimeout(() => {
-            if (playerRef.current && isReady) {
-                playerRef.current.playVideo();
-            }
-        }, 600);
-    };
-
-    // ✅ Open in external browser function
-    const openInBrowser = () => {
-        const currentUrl = window.location.href;
-        window.open(currentUrl, '_blank');
-    };
+    const openInBrowser = () => window.open(window.location.href, '_blank');
 
     return (
         <aside className="music-player">
-            <div id="youtube-player-container" style={{ display: 'none' }}></div>
+            {/* Div chứa Iframe ẩn */}
+            <div id="youtube-player-container"></div>
 
             <div className="music-header">
                 <div className="header-content">
@@ -281,37 +171,20 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onClose }) => {
                 <button className="close-btn" onClick={onClose}>×</button>
             </div>
 
-            {/* ✅ START BUTTON - Hiển thị khi chưa load player */}
-            {showStartButton && (
+            {showStartButton ? (
                 <div className="start-music-container">
                     <button className="start-music-btn" onClick={handleStartMusic}>
                         🎵 Bắt đầu nghe nhạc
                     </button>
-
-                    {/* ✅ Thông báo nếu đang trong WebView */}
                     {isInAppBrowser && (
                         <div className="webview-notice">
-                            <p style={{ fontSize: '11px', color: '#999', margin: '10px 0 0', lineHeight: 1.4 }}>
-                                💡 Nếu không nghe được, vui lòng{' '}
-                                <span
-                                    onClick={openInBrowser}
-                                    style={{
-                                        color: '#e74c3c',
-                                        textDecoration: 'underline',
-                                        cursor: 'pointer',
-                                        fontWeight: 600
-                                    }}
-                                >
-                                    mở bằng trình duyệt
-                                </span>
+                            <p style={{ fontSize: '11px', color: '#999', marginTop: '10px' }}>
+                                💡 Nếu không nghe được, hãy <span onClick={openInBrowser} style={{ color: '#e74c3c', textDecoration: 'underline', cursor: 'pointer' }}>mở bằng trình duyệt</span>
                             </p>
                         </div>
                     )}
                 </div>
-            )}
-
-            {/* ✅ PLAYER CONTENT - Chỉ hiển thị khi đã load */}
-            {!showStartButton && (
+            ) : (
                 <>
                     <div className="current-track">
                         <div className="track-info-large">
@@ -327,7 +200,6 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onClose }) => {
                                 max={duration || 100}
                                 value={currentTime}
                                 onChange={handleSeek}
-                                disabled={!isReady}
                             />
                             <div className="time-info">
                                 <span>{formatTime(currentTime)}</span>
@@ -336,11 +208,11 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onClose }) => {
                         </div>
 
                         <div className="player-controls">
-                            <button onClick={handlePrev} disabled={!isReady}>⏮</button>
-                            <button className="play-btn" onClick={togglePlay} disabled={!isReady}>
+                            <button onClick={handlePrev}>⏮</button>
+                            <button className="play-btn" onClick={togglePlay}>
                                 {isPlaying ? '⏸' : '▶'}
                             </button>
-                            <button onClick={handleNext} disabled={!isReady}>⏭</button>
+                            <button onClick={handleNext}>⏭</button>
                         </div>
                     </div>
 
@@ -350,14 +222,13 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onClose }) => {
                             <li
                                 key={i}
                                 className={`playlist-item ${playingIndex === i ? 'playing' : ''}`}
-                                onClick={() => handleSongClick(i)}
+                                onClick={() => setPlayingIndex(i)}
                             >
-                                <div className="playlist-cover" style={{ background: `url(${song.cover}) center/cover` }}></div>
+                                <div className="playlist-cover" style={{ backgroundImage: `url(${song.cover})` }}></div>
                                 <div className="playlist-info">
                                     <div className="song-title">{song.title}</div>
                                     <div className="song-artist">{song.artist}</div>
                                 </div>
-                                <div className="song-duration">{song.duration}</div>
                             </li>
                         ))}
                     </ul>
