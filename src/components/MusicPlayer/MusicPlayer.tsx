@@ -25,11 +25,13 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onClose }) => {
     const [isPlaying, setIsPlaying] = useState<boolean>(false);
     const [currentTime, setCurrentTime] = useState<number>(0);
     const [duration, setDuration] = useState<number>(0);
-    const [isReady, setIsReady] = useState<boolean>(false); // ✅ Track player ready state
+    const [isReady, setIsReady] = useState<boolean>(false);
+    const [showStartButton, setShowStartButton] = useState<boolean>(true); // ✅ Hiển thị nút Start
+    const [isInAppBrowser, setIsInAppBrowser] = useState<boolean>(false); // ✅ Kiểm tra WebView
 
     const playerRef = useRef<any>(null);
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-    const isMountedRef = useRef<boolean>(true); // ✅ Track component mounted
+    const isMountedRef = useRef<boolean>(true);
 
     const playlist: Song[] = [
         { cover: '/images/Merry-Christmas.png', title: 'Merry Christmas Mr. Lawrence', artist: 'Ryuichi Sakamoto', duration: '', youtubeId: 'ELJf83TelA0' },
@@ -42,48 +44,62 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onClose }) => {
 
     const currentSong = playlist[playingIndex];
 
-    // ✅ 1. Load YouTube SDK
+    // ✅ Kiểm tra xem có đang trong WebView (Zalo/FB) không
     useEffect(() => {
+        const userAgent = navigator.userAgent.toLowerCase();
+        const isWebView =
+            userAgent.includes('zalo') ||
+            userAgent.includes('fban') ||
+            userAgent.includes('fbav') ||
+            userAgent.includes('instagram') ||
+            (userAgent.includes('mobile') && !userAgent.includes('safari'));
+
+        setIsInAppBrowser(isWebView);
+
+        if (isWebView) {
+            console.log('Đang chạy trong WebView (Zalo/Facebook)');
+        }
+    }, []);
+
+    // ✅ Load YouTube SDK - chỉ khi user click Start
+    const loadYouTubeAPI = () => {
         isMountedRef.current = true;
 
-        const loadYouTubeAPI = () => {
-            if (!window.YT) {
-                const tag = document.createElement('script');
-                tag.src = "https://www.youtube.com/iframe_api";
-                const firstScriptTag = document.getElementsByTagName('script')[0];
-                firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+        if (!window.YT) {
+            const tag = document.createElement('script');
+            tag.src = "https://www.youtube.com/iframe_api";
+            const firstScriptTag = document.getElementsByTagName('script')[0];
+            firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
 
-                window.onYouTubeIframeAPIReady = () => {
-                    if (isMountedRef.current) {
-                        initPlayer();
-                    }
-                };
-            } else {
-                // ✅ Đợi một chút để đảm bảo DOM đã render
-                setTimeout(() => {
-                    if (isMountedRef.current) {
-                        initPlayer();
-                    }
-                }, 100);
-            }
-        };
+            window.onYouTubeIframeAPIReady = () => {
+                if (isMountedRef.current) {
+                    initPlayer();
+                }
+            };
+        } else {
+            setTimeout(() => {
+                if (isMountedRef.current) {
+                    initPlayer();
+                }
+            }, 100);
+        }
+    };
 
-        loadYouTubeAPI();
-
+    // ✅ Cleanup khi component unmount
+    useEffect(() => {
         return () => {
             isMountedRef.current = false;
             if (timerRef.current) {
                 clearInterval(timerRef.current);
                 timerRef.current = null;
             }
-            // ✅ Cleanup player
             if (playerRef.current && playerRef.current.destroy) {
                 playerRef.current.destroy();
             }
         };
     }, []);
 
-    // ✅ 2. Initialize Player
+    // ✅ Initialize Player
     const initPlayer = () => {
         const container = document.getElementById('youtube-player-container');
         if (!container) {
@@ -97,20 +113,21 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onClose }) => {
                 width: '0',
                 videoId: currentSong.youtubeId,
                 playerVars: {
-                    autoplay: 0,
+                    autoplay: 0, // ✅ Không autoplay
                     controls: 0,
                     disablekb: 1,
                     rel: 0,
-                    enablejsapi: 1, // ✅ Enable JS API
+                    enablejsapi: 1,
+                    origin: window.location.origin, // ✅ Cần thiết cho WebView
                 },
                 events: {
                     onReady: (event: any) => {
                         console.log('Player ready');
                         setIsReady(true);
                         setDuration(event.target.getDuration());
+                        setShowStartButton(false); // ✅ Ẩn nút Start
                     },
                     onStateChange: (event: any) => {
-                        // ✅ Update playing state based on player state
                         if (event.data === window.YT.PlayerState.PLAYING) {
                             setIsPlaying(true);
                         } else if (event.data === window.YT.PlayerState.PAUSED) {
@@ -121,7 +138,6 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onClose }) => {
                     },
                     onError: (event: any) => {
                         console.error('YouTube Player Error:', event.data);
-                        // ✅ Auto skip to next on error
                         handleNext();
                     }
                 }
@@ -131,7 +147,13 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onClose }) => {
         }
     };
 
-    // ✅ 3. Update progress timer
+    // ✅ Handle Start Button Click
+    const handleStartMusic = () => {
+        console.log('User clicked Start - Loading YouTube API...');
+        loadYouTubeAPI();
+    };
+
+    // ✅ Update progress timer
     useEffect(() => {
         if (isPlaying && isReady) {
             timerRef.current = setInterval(() => {
@@ -143,7 +165,7 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onClose }) => {
                         console.error('Error getting current time:', error);
                     }
                 }
-            }, 500); // ✅ Update every 500ms for smoother progress
+            }, 500);
         } else {
             if (timerRef.current) {
                 clearInterval(timerRef.current);
@@ -159,24 +181,21 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onClose }) => {
         };
     }, [isPlaying, isReady]);
 
-    // ✅ 4. Handle song change
+    // ✅ Handle song change
     useEffect(() => {
         if (!isReady || !playerRef.current) return;
 
         const changeSong = async () => {
             try {
-                // ✅ Stop current playback first
                 if (playerRef.current.getPlayerState() === window.YT.PlayerState.PLAYING) {
                     playerRef.current.pauseVideo();
                 }
 
-                // ✅ Load new video
                 playerRef.current.loadVideoById({
                     videoId: currentSong.youtubeId,
                     startSeconds: 0
                 });
 
-                // ✅ Wait for video to load
                 setTimeout(() => {
                     if (playerRef.current && playerRef.current.getDuration) {
                         const newDuration = playerRef.current.getDuration();
@@ -210,12 +229,10 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onClose }) => {
 
     const handleNext = () => {
         setPlayingIndex((prev) => (prev === playlist.length - 1 ? 0 : prev + 1));
-        // ✅ Don't manually set isPlaying - let onStateChange handle it
     };
 
     const handlePrev = () => {
         setPlayingIndex((prev) => (prev === 0 ? playlist.length - 1 : prev - 1));
-        // ✅ Don't manually set isPlaying - let onStateChange handle it
     };
 
     const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -237,15 +254,19 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onClose }) => {
         return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
     };
 
-    // ✅ Handle playlist item click
     const handleSongClick = (index: number) => {
         setPlayingIndex(index);
-        // ✅ Auto play after changing song
         setTimeout(() => {
             if (playerRef.current && isReady) {
                 playerRef.current.playVideo();
             }
         }, 600);
+    };
+
+    // ✅ Open in external browser function
+    const openInBrowser = () => {
+        const currentUrl = window.location.href;
+        window.open(currentUrl, '_blank');
     };
 
     return (
@@ -260,54 +281,88 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onClose }) => {
                 <button className="close-btn" onClick={onClose}>×</button>
             </div>
 
-            <div className="current-track">
-                <div className="track-info-large">
-                    <h3>{currentSong.title}</h3>
-                    <p>{currentSong.artist}</p>
-                </div>
-
-                <div className="progress-area">
-                    <input
-                        type="range"
-                        className="progress-bar"
-                        min="0"
-                        max={duration || 100}
-                        value={currentTime}
-                        onChange={handleSeek}
-                        disabled={!isReady} // ✅ Disable when not ready
-                    />
-                    <div className="time-info">
-                        <span>{formatTime(currentTime)}</span>
-                        <span>{formatTime(duration)}</span>
-                    </div>
-                </div>
-
-                <div className="player-controls">
-                    <button onClick={handlePrev} disabled={!isReady}>⏮</button>
-                    <button className="play-btn" onClick={togglePlay} disabled={!isReady}>
-                        {isPlaying ? '⏸' : '▶'}
+            {/* ✅ START BUTTON - Hiển thị khi chưa load player */}
+            {showStartButton && (
+                <div className="start-music-container">
+                    <button className="start-music-btn" onClick={handleStartMusic}>
+                        🎵 Bắt đầu nghe nhạc
                     </button>
-                    <button onClick={handleNext} disabled={!isReady}>⏭</button>
-                </div>
-            </div>
 
-            <div className="playlist-label">Danh Sách Phát</div>
-            <ul className="playlist">
-                {playlist.map((song, i) => (
-                    <li
-                        key={i}
-                        className={`playlist-item ${playingIndex === i ? 'playing' : ''}`}
-                        onClick={() => handleSongClick(i)}
-                    >
-                        <div className="playlist-cover" style={{ background: `url(${song.cover}) center/cover` }}></div>
-                        <div className="playlist-info">
-                            <div className="song-title">{song.title}</div>
-                            <div className="song-artist">{song.artist}</div>
+                    {/* ✅ Thông báo nếu đang trong WebView */}
+                    {isInAppBrowser && (
+                        <div className="webview-notice">
+                            <p style={{ fontSize: '11px', color: '#999', margin: '10px 0 0', lineHeight: 1.4 }}>
+                                💡 Nếu không nghe được, vui lòng{' '}
+                                <span
+                                    onClick={openInBrowser}
+                                    style={{
+                                        color: '#e74c3c',
+                                        textDecoration: 'underline',
+                                        cursor: 'pointer',
+                                        fontWeight: 600
+                                    }}
+                                >
+                                    mở bằng trình duyệt
+                                </span>
+                            </p>
                         </div>
-                        <div className="song-duration">{song.duration}</div>
-                    </li>
-                ))}
-            </ul>
+                    )}
+                </div>
+            )}
+
+            {/* ✅ PLAYER CONTENT - Chỉ hiển thị khi đã load */}
+            {!showStartButton && (
+                <>
+                    <div className="current-track">
+                        <div className="track-info-large">
+                            <h3>{currentSong.title}</h3>
+                            <p>{currentSong.artist}</p>
+                        </div>
+
+                        <div className="progress-area">
+                            <input
+                                type="range"
+                                className="progress-bar"
+                                min="0"
+                                max={duration || 100}
+                                value={currentTime}
+                                onChange={handleSeek}
+                                disabled={!isReady}
+                            />
+                            <div className="time-info">
+                                <span>{formatTime(currentTime)}</span>
+                                <span>{formatTime(duration)}</span>
+                            </div>
+                        </div>
+
+                        <div className="player-controls">
+                            <button onClick={handlePrev} disabled={!isReady}>⏮</button>
+                            <button className="play-btn" onClick={togglePlay} disabled={!isReady}>
+                                {isPlaying ? '⏸' : '▶'}
+                            </button>
+                            <button onClick={handleNext} disabled={!isReady}>⏭</button>
+                        </div>
+                    </div>
+
+                    <div className="playlist-label">Danh Sách Phát</div>
+                    <ul className="playlist">
+                        {playlist.map((song, i) => (
+                            <li
+                                key={i}
+                                className={`playlist-item ${playingIndex === i ? 'playing' : ''}`}
+                                onClick={() => handleSongClick(i)}
+                            >
+                                <div className="playlist-cover" style={{ background: `url(${song.cover}) center/cover` }}></div>
+                                <div className="playlist-info">
+                                    <div className="song-title">{song.title}</div>
+                                    <div className="song-artist">{song.artist}</div>
+                                </div>
+                                <div className="song-duration">{song.duration}</div>
+                            </li>
+                        ))}
+                    </ul>
+                </>
+            )}
         </aside>
     );
 };

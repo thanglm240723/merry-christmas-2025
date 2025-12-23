@@ -241,6 +241,47 @@
   margin-top: 5px;
 }
 
+/* ===== START MUSIC BUTTON ===== */
+.start-music-container {
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.start-music-btn {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+  color: white;
+  border: none;
+  padding: 16px 32px;
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(231, 76, 60, 0.4);
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.start-music-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(231, 76, 60, 0.6);
+  background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+}
+
+.start-music-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+}
+
+.webview-notice {
+  margin-top: 15px;
+  padding: 10px;
+  background: rgba(231, 76, 60, 0.1);
+  border-radius: 8px;
+  border: 1px dashed rgba(231, 76, 60, 0.3);
+}
+
 /* ===== RESPONSIVE - MOBILE CENTERED ===== */
 
 /* Tablet */
