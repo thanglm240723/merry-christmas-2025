@@ -3,11 +3,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* Đặt vị trí cố định ở góc trên trái, thay thế vị trí cũ */
   position: fixed;
-  top: 20px;
+  top: 80px; /* ✅ Tăng lên để không đè nav */
   left: 20px;
-  z-index: 40;
+  z-index: 50; /* ✅ Thấp hơn nav (100) */
   font-family: 'Segoe UI', sans-serif;
   animation: slideDown 0.8s ease-out;
 }
@@ -17,7 +16,7 @@
   to { transform: translateY(0); opacity: 1; }
 }
 
-/* Dòng chữ sự kiện (Vd: Sắp tới Giáng Sinh...) */
+/* Dòng chữ sự kiện */
 .event-title {
   color: #fff;
   font-size: 14px;
@@ -26,7 +25,7 @@
   letter-spacing: 2px;
   margin-bottom: 8px;
   text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-  background: rgba(231, 76, 60, 0.8); /* Màu đỏ giáng sinh */
+  background: rgba(231, 76, 60, 0.8);
   padding: 4px 12px;
   border-radius: 20px;
   backdrop-filter: blur(4px);
@@ -38,14 +37,14 @@
   gap: 10px;
 }
 
-/* Từng ô thời gian (Ngày, Giờ, Phút...) */
+/* Từng ô thời gian */
 .time-box {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.6); /* Nền đen mờ */
-  backdrop-filter: blur(10px); /* Hiệu ứng kính */
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
   padding: 8px 10px;
@@ -75,10 +74,81 @@
   margin-top: 2px;
 }
 
-/* Mobile Responsive: Thu nhỏ lại chút trên màn hình bé */
-@media (max-width: 600px) {
-  .countdown-wrapper { top: 10px; left: 10px; align-items: flex-start; }
-  .time-box { min-width: 45px; padding: 6px 8px; }
-  .time-value { font-size: 16px; }
-  .time-label { font-size: 8px; }
+/* ===== RESPONSIVE ===== */
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .countdown-wrapper {
+    top: 70px;
+    left: 15px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .countdown-wrapper {
+    top: 10px; /* ✅ Lên trên cùng */
+    left: 10px;
+    align-items: flex-start;
+  }
+  
+  .time-box {
+    min-width: 45px;
+    padding: 6px 8px;
+  }
+  
+  .time-value {
+    font-size: 16px;
+  }
+  
+  .time-label {
+    font-size: 8px;
+  }
+  
+  .event-title {
+    font-size: 11px;
+    padding: 3px 8px;
+    letter-spacing: 1px;
+  }
+  
+  .timer-container {
+    gap: 6px;
+  }
+}
+
+/* Very Small Mobile */
+@media (max-width: 480px) {
+  .countdown-wrapper {
+    top: 8px;
+    left: 8px;
+    transform: scale(0.85); /* ✅ Thu nhỏ 15% */
+    transform-origin: top left;
+  }
+  
+  .time-box {
+    min-width: 40px;
+    padding: 5px 6px;
+  }
+  
+  .time-value {
+    font-size: 14px;
+  }
+  
+  .time-label {
+    font-size: 7px;
+  }
+  
+  .event-title {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+}
+
+/* Landscape Mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+  .countdown-wrapper {
+    top: 5px;
+    left: 5px;
+    transform: scale(0.7); /* ✅ Thu nhỏ nhiều hơn */
+  }
 }

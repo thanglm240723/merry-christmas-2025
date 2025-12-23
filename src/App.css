@@ -15,7 +15,7 @@ header {
   position: fixed; top: 16px; left: 16px;
   background: rgba(0,0,0,0.5);
   padding: 8px 12px; border-radius: 8px;
-  font-size: 14px; z-index: 30;
+  font-size: 14px; z-index: 100; /* ✅ Tăng z-index */
   backdrop-filter: blur(4px);
 }
 
@@ -24,7 +24,8 @@ nav {
   display: flex; gap: 12px;
   background: rgba(0,0,0,0.5);
   padding: 8px 12px; border-radius: 8px;
-  font-size: 13px; align-items: center; z-index: 30;
+  font-size: 13px; align-items: center; 
+  z-index: 100; /* ✅ Tăng z-index cao hơn countdown */
   backdrop-filter: blur(4px);
 }
 nav a, nav button {
@@ -37,13 +38,76 @@ nav a, nav button {
 nav a:hover, nav button:hover { background: rgba(255,255,255,0.4); }
 .screen-icon { width: 18px; height: 18px; fill: white; }
 
-/* --- BACKGROUND TREE --- */
-.tree-container {
-  position: fixed; bottom: 0; right: 5%;
-  width: 280px; filter: drop-shadow(0 0 10px rgba(0,0,0,0.5));
-  z-index: 5; opacity: 0.9;
+/* --- COUNTDOWN TIMER (FIXED POSITION) --- */
+.countdown-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: fixed;
+  top: 80px; /* ✅ Tăng khoảng cách từ top để không đè lên nav */
+  left: 20px;
+  z-index: 50; /* ✅ Thấp hơn nav (100) */
+  font-family: 'Segoe UI', sans-serif;
+  animation: slideDown 0.8s ease-out;
 }
-.tree-container img { width: 100%; display: block; }
+
+@keyframes slideDown {
+  from { transform: translateY(-50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.event-title {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  background: rgba(231, 76, 60, 0.8);
+  padding: 4px 12px;
+  border-radius: 20px;
+  backdrop-filter: blur(4px);
+}
+
+.timer-container {
+  display: flex;
+  gap: 10px;
+}
+
+.time-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 8px 10px;
+  min-width: 55px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+  transition: transform 0.3s;
+}
+
+.time-box:hover {
+  transform: translateY(-3px);
+  border-color: #e74c3c;
+}
+
+.time-value {
+  font-size: 20px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.time-label {
+  font-size: 10px;
+  color: #ccc;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
 
 /* --- MUSIC PLAYER --- */
 .music-player {
@@ -51,7 +115,7 @@ nav a:hover, nav button:hover { background: rgba(255,255,255,0.4); }
   width: 320px; background: #ffffff;
   border-radius: 16px;
   box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-  color: #333; z-index: 40;
+  color: #333; z-index: 90; /* ✅ Thấp hơn nav */
   overflow: hidden;
   font-family: 'Segoe UI', sans-serif;
 }
@@ -110,8 +174,7 @@ nav a:hover, nav button:hover { background: rgba(255,255,255,0.4); }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #ddd; border-radius: 10px; }
 
-
-
+/* --- CENTER CONTENT (TREE) --- */
 .main-stage {
   position: fixed;
   top: 50%;
@@ -126,15 +189,12 @@ nav a:hover, nav button:hover { background: rgba(255,255,255,0.4); }
 }
 
 .tree-container {
- 
   width: 60vh; 
   max-width: 500px; 
   min-width: 280px; 
   filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.2));
-  
-  /* Hiệu ứng chuyển động */
   animation: tree-animation 5s ease-in-out infinite;
-  transform-origin: bottom center; /* Lắc từ gốc cây */
+  transform-origin: bottom center;
 }
 
 .christmas-tree-img {
@@ -142,7 +202,6 @@ nav a:hover, nav button:hover { background: rgba(255,255,255,0.4); }
   height: auto;
   display: block;
 }
-
 
 @keyframes tree-animation {
   0%, 100% {
@@ -153,10 +212,139 @@ nav a:hover, nav button:hover { background: rgba(255,255,255,0.4); }
   }
 }
 
+/* --- RESPONSIVE DESIGN --- */
 
+/* Tablet & Small Laptop */
+@media (max-width: 1024px) {
+  nav {
+    gap: 8px;
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  
+  nav a, nav button {
+    padding: 3px 6px;
+  }
+  
+  .countdown-wrapper {
+    top: 70px;
+    left: 15px;
+  }
+  
+  .music-player {
+    width: 280px;
+    bottom: 15px;
+    right: 15px;
+  }
+}
+
+/* Mobile Landscape & Portrait */
 @media (max-width: 768px) {
+  nav {
+    top: 10px;
+    right: 10px;
+    gap: 6px;
+    padding: 6px 8px;
+    font-size: 11px;
+    flex-wrap: wrap; /* ✅ Cho phép xuống dòng nếu cần */
+    max-width: 60%; /* ✅ Giới hạn chiều rộng */
+  }
+  
+  nav a, nav button {
+    padding: 3px 5px;
+    font-size: 10px;
+  }
+  
+  .countdown-wrapper {
+    top: 10px; /* ✅ Lên cao hơn trên mobile */
+    left: 10px;
+    align-items: flex-start;
+  }
+  
+  .time-box {
+    min-width: 45px;
+    padding: 6px 8px;
+  }
+  
+  .time-value {
+    font-size: 16px;
+  }
+  
+  .time-label {
+    font-size: 8px;
+  }
+  
+  .event-title {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+  
   .tree-container {
-    width: 25vw; 
-    top: 30%; 
+    width: 50vh;
+    max-width: 350px;
+  }
+  
+  .music-player {
+    width: 90%;
+    max-width: 320px;
+    bottom: 10px;
+    right: 50%;
+    transform: translateX(50%); /* ✅ Căn giữa trên mobile */
+  }
+}
+
+/* Very Small Mobile */
+@media (max-width: 480px) {
+  nav {
+    gap: 4px;
+    padding: 5px 6px;
+    font-size: 9px;
+    max-width: 55%;
+  }
+  
+  nav a, nav button {
+    padding: 2px 4px;
+    border-radius: 3px;
+  }
+  
+  .countdown-wrapper {
+    top: 8px;
+    left: 8px;
+    transform: scale(0.85); /* ✅ Thu nhỏ lại 15% */
+    transform-origin: top left;
+  }
+  
+  .music-player {
+    width: 95%;
+    bottom: 5px;
+  }
+  
+  .tree-container {
+    width: 40vh;
+    max-width: 250px;
+  }
+}
+
+/* Landscape Mobile (màn hình ngang) */
+@media (max-height: 500px) and (orientation: landscape) {
+  .countdown-wrapper {
+    top: 5px;
+    left: 5px;
+    transform: scale(0.7);
+  }
+  
+  nav {
+    top: 5px;
+    right: 5px;
+    font-size: 9px;
+  }
+  
+  .music-player {
+    width: 260px;
+    bottom: 5px;
+  }
+  
+  .tree-container {
+    width: 35vh;
   }
 }
