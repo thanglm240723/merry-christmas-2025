@@ -31,7 +31,7 @@ function App() {
       {/* Gom nhóm cây và xe/mèo để dễ căn giữa */}
       <div className="center-content">
         <div className="tree-container">
-          <img src="/images/Tre-Chimast.png" alt="Christmas Tree" className="christmas-tree-img" />
+          <img src="/images/tree-2.png" alt="Christmas Tree" className="christmas-tree-img" />
         </div>
       </div>
 

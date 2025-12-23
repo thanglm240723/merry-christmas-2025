@@ -111,65 +111,52 @@ nav a:hover, nav button:hover { background: rgba(255,255,255,0.4); }
 ::-webkit-scrollbar-thumb { background: #ddd; border-radius: 10px; }
 
 
-
-/* Container bao quanh cả 2 hình để căn giữa */
-.center-content {
+/* Container chính để căn giữa tuyệt đối */
+.main-stage {
   position: fixed;
-  top: 55%; /* Đẩy xuống dưới một chút để nhường chỗ cho Countdown phía trên */
+  top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   display: flex;
-  flex-direction: column; /* Xếp chồng cây lên trên xe/mèo */
-  align-items: center;
   justify-content: center;
+  align-items: center;
   z-index: 5;
   width: 100%;
-  pointer-events: none; /* Tránh việc hình ảnh che mất các nút bấm */
+  pointer-events: none; /* Để không chặn các click chuột vào background */
 }
 
-/* Căn chỉnh cây thông */
 .tree-container {
-  width: 45vh; /* Dùng đơn vị vh để tự co giãn theo chiều cao màn hình */
-  max-width: 350px; /* Giới hạn độ to trên máy tính */
-  min-width: 200px; /* Đảm bảo không quá nhỏ trên điện thoại */
-  filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.3));
-  animation: sway 4s ease-in-out infinite; /* Hiệu ứng lắc */
+  /* Tăng kích thước: 60vh trên máy tính (khoảng 60% chiều cao màn hình) */
+  width: 60vh; 
+  max-width: 500px; /* Giới hạn độ rộng tối đa trên màn hình cực lớn */
+  min-width: 280px; /* Đảm bảo không quá bé trên điện thoại cũ */
+  filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.2));
+  
+  /* Hiệu ứng chuyển động */
+  animation: tree-animation 5s ease-in-out infinite;
+  transform-origin: bottom center; /* Lắc từ gốc cây */
 }
 
-/* Căn chỉnh xe/mèo */
-.cart-container {
-  width: 25vh;
-  max-width: 200px;
-  min-width: 120px;
-  margin-top: -20px; /* Kéo xe sát vào chân cây thông */
-  animation: sway 3s ease-in-out infinite reverse; /* Lắc ngược hướng cây cho sinh động */
-}
-
-.christmas-tree-img, .cart-img {
+.christmas-tree-img {
   width: 100%;
   height: auto;
   display: block;
 }
 
-/* Hiệu ứng lắc nhẹ (Sway) */
-@keyframes sway {
+/* Hiệu ứng lắc và nảy nhẹ (Pulse & Sway) */
+@keyframes tree-animation {
   0%, 100% {
-    transform: rotate(-2deg) translateY(0);
+    transform: rotate(-1deg) scale(1);
   }
   50% {
-    transform: rotate(2deg) translateY(-5px);
+    transform: rotate(1.5deg) scale(1.03); /* Phình to nhẹ tạo cảm giác sinh động */
   }
 }
 
-/* Tùy chỉnh riêng cho điện thoại màn hình nhỏ */
-@media (max-width: 600px) {
-  .center-content {
-    top: 60%; /* Hạ thấp hơn một chút trên mobile */
-  }
+/* Điều chỉnh riêng cho điện thoại */
+@media (max-width: 768px) {
   .tree-container {
-    width: 60vw; /* Trên mobile thì ưu tiên chiều rộng màn hình */
-  }
-  .cart-container {
-    width: 40vw;
+    width: 80vw; /* Chiếm 80% chiều rộng màn hình điện thoại */
+    top: 55%; /* Hạ thấp xuống một chút nếu vướng Countdown */
   }
 }
